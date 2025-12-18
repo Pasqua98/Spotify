@@ -1,5 +1,11 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+import os
+import warnings
+import seaborn as sns
+import kagglehub
+
+warnings.filterwarnings("ignore")
 
 def get_all_liked_tracks(sp):
     tracks = []
@@ -72,6 +78,14 @@ def get_features(sp, track_uris):
     df_features = pd.DataFrame(features)
     return df_features
 
+def get_data():
+
+    sns.set_style("white")
+    for dirname, _, filenames in os.walk('/kaggle/input'):
+        for filename in filenames:
+            print(os.path.join(dirname, filename))
+    path = kagglehub.dataset_download("maharshipandya/-spotify-tracks-dataset")
+    return path
 
 if __name__ == "__main__":
 
@@ -88,5 +102,23 @@ if __name__ == "__main__":
     playlist_tracks = get_all_playlist_tracks(sp)
     all_tracks = dedupe_by_uri(liked_tracks + playlist_tracks)
     uris=[u['uri'] for u in all_tracks]
+
+    import lyricsgenius
+
+    genius = lyricsgenius.Genius(
+        "SkclVT1F38CfxJiIUkwt_kc06NQfHXrAvhEia1oqttCBX5qa3P9_2lbfZU4q0inr",
+        skip_non_songs=True,
+        excluded_terms=["(Remix)", "(Live)"],
+        remove_section_headers=True
+    )
+
+    song = genius.search_song("Numb", "Linkin Park")
+
+    print(song.lyrics)
+
+    #sp.audio_features(uris)
     #get kaggle dataset, then analyze data from there. Function like data_analysis are not included in APIs anymore
-    print("Features:", af)
+    #file_path=get_data()
+   # print(file_path+"\\dataset.csv")
+    #df = pd.read_csv(file_path)
+    #print(df.head())
