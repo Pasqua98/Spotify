@@ -4,6 +4,7 @@ import os
 import warnings
 import seaborn as sns
 import kagglehub
+import torch
 
 warnings.filterwarnings("ignore")
 
@@ -114,11 +115,19 @@ if __name__ == "__main__":
 
     song = genius.search_song("Numb", "Linkin Park")
 
-    print(song.lyrics)
+    from transformers import pipeline
 
-    #sp.audio_features(uris)
-    #get kaggle dataset, then analyze data from there. Function like data_analysis are not included in APIs anymore
-    #file_path=get_data()
-   # print(file_path+"\\dataset.csv")
-    #df = pd.read_csv(file_path)
-    #print(df.head())
+    emotion = pipeline(
+        "text-classification",
+        model="bhadresh-savani/distilbert-base-uncased-emotion",
+        return_all_scores=True
+    )
+
+    lyrics = song.lyrics
+
+    scores = emotion(lyrics)[0]
+
+    scores = sorted(scores, key=lambda x: x["score"], reverse=True)
+    for s in scores[:5]:
+        print(s["label"], s["score"])
+#build dataset in csv with emotion scores per each song, then cluster with superposition
